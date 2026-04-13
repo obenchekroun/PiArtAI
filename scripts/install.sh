@@ -8,17 +8,19 @@ sudo apt-get upgrade
 sudo apt-get -y install tmux vim
 sudo apt-get -y install cmake
 sudo apt-get -y install python3-dev python3-venv python3-pip
+sudo apt-get -y install python3-numpy python3-pil # for waveshare displays
 sudo apt-get -y install imagemagick
 sudo apt-get -y install git git-lfs
 sudo apt-get -y install libopencv-dev  python3-opencv
 
 cd "$INSTALL_DIR"
-python3 -m venv venv
-. venv/bin/activate
+python3 -m venv .venv
+. .venv/bin/activate
 
-python -m pip install opencv_contrib_python
-python -m pip install inky[rpi]==1.5.0
-python -m pip install pillow
+python3 -m pip install opencv_contrib_python
+python3 -m pip install inky[rpi]==1.5.0
+python3 -m pip install pillow
+python3 -m pip install spidev # for waveshare display
   
 # Following instructions taken directly from [OnnxStream repo](https://github.com/vitoplantamura/OnnxStream).
 

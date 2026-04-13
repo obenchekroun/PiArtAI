@@ -1,20 +1,12 @@
-# Updates
 
-* 30th Nov 2025: Buttons to move through previous images (and shutdown).
-* 24th Nov 2025: Inky 13.3" support notes.
-* 1st Jan 2025: Added support for OnnxStream's new custom resolutions and updated some documentation.
-Special thanks to [Vito Plantamura](https://github.com/vitoplantamura), [Delph](https://github.com/Delph) and [Roger](https://github.com/g7ruh)
-
-# PaperPiAI - Raspberry Pi Zero Generative Art E-Paper Frame
+# PiArtAI - Raspberry Pi Zero Generative Art E-Paper Frame
 
 PaperPiAI is a standalone Raspberry Pi Zero 2 powered e-ink picture frame
 running stable diffusion generating an infinite array of pictures.
 
 This default set-up generates random flower pictures with random styles that
-I've found to work particularly well on the Inky Impressions 7.3" 7-colour
+I've found to work particularly well on a 7-colour
 e-ink display, i.e. low-colour palette styles and simple designs.
-
-![Blooming Great!](https://raw.githubusercontent.com/dylski/PaperPiAI/refs/heads/main/assets/paperpiai_examples.jpg)
 
 Once set up the picture frame is fully self-sufficient, able to generate unique
 images with no internet access until the end of time (or a hardware failure -
@@ -36,15 +28,21 @@ to guide the crop (landscape or portrait) towards most interesting part of
 the image. This was needed in an earlier version when we could only generate
 512x512 images.
 
+# Acknowledgments
+
+Based on PaperPiAI : [dylski's PpaerPiAI](https://github.com/dylski/PaperPiAI). This project has been largely based on PaperPiAI with a few tweaks for my needs. All credit goes to them for making this awesome project.
+
+
 # Install
 
 * **Raspberry Pi Zero 2**
 * **Inky Impression 7.3"** 7-colour e-ink display. For Waveshare displays, see
   [here](https://github.com/dylski/PaperPiAI/issues/12#issuecomment-2603268581)
+* OR Waveshare 5.65 inch 7 color display 
 * Picture frame, ideally with deep frame to accommodate RPi Zero
 * Heatsink (optional) - I saw a max of 70°C (ambient was ~21°C) but one might
   be useful in a hot area or confined space
-* **Raspbian Bullseye Lite**. I have failed to get it working on Trixie ([see here](https://github.com/dylski/PaperPiAI/issues/22#issuecomment-3718491877)) and Bookworm (which had odd slowdowns).
+* **Raspbian Bullseye Lite**. I have failed to get it working on Trixie due to the system taking too much memory ([see here](https://github.com/dylski/PaperPiAI/issues/22#issuecomment-3718491877) for some guidelines) and Bookworm (which had odd slowdowns).
 
 ##  Increase swapfile size for compilation
 
@@ -65,11 +63,11 @@ Firstly download this repository somewhere with:
 
 ```
 sudo apt install git
-git clone https://github.com/dylski/PaperPiAI.git
+git clone https://github.com/obenchekroun/PiArtAI.git
 ```
 Then run the installation script:
 ```
-cd PaperPiAI
+cd PiArtAI
 scripts/install.sh
 ```
 `scripts/install.sh` has all the commands needed to install all the required

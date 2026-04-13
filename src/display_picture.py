@@ -84,6 +84,16 @@ def display(inky, image, saturation=1.0):
     inky.set_image(Image.fromarray(image), saturation=saturation)
     inky.show()
 
+def display_waveshare(image, saturation=1.0):
+    from waveshare_epd import epd5in65f # swap this if you have a different display type
+    epd = epd5in65f.EPD()
+    if image.shape[0] > image.shape[1]:
+        image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    epd.init()
+    epd.display(epd.getbuffer(Image.fromarray(image)))
+    epd.sleep()
+    
 
 if __name__ == "__main__":
 
@@ -124,7 +134,8 @@ if __name__ == "__main__":
         image = crop(image, disp_w, disp_h, args["centre_crop"]==False)
 
     if not simulate_display:
-        display(inky, image)
+        #display(inky, image)
+        display_waveshare(image)
 
     if args["output"]:
         save_image(args["output"], image)
