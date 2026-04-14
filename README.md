@@ -95,7 +95,10 @@ You need to run `generate_picture.py` with the resolution of the display and a
 target directory to save the images. The Inky Impressions has a resolution of
 800x480 so for a landscape image the command would be:
 
-`python src/generate_picture.py --width=800 --height=480 output_dir`
+``` Bash
+python3 src/generate_picture.py --width=800 --height=480 output_dir # for Pimoroni 7.3 inch screen
+python3 src/generate_picture.py --width=600 --height=448 output_dir # for waveshare 5.65inch screen
+```
 
 This generates a new image with a unique name based on the prompt, and a copy
 called 'output.png' to make it simple to display.
@@ -103,7 +106,7 @@ called 'output.png' to make it simple to display.
 Note that if you install the python packages into a virtual env (as the script
 above does) then you need to use that python instance, e.g.:
 
-`venv/bin/python src/generate_picture.py --width=800
+`.venv/bin/python3 src/generate_picture.py --width=800
 --height=480 /tmp`
 
 For more options, run the `generate_picture.py` script with the `-h` or `--help`
@@ -111,7 +114,7 @@ flags to see full usage.
 
 ## Displaying
 
-To send to the display use `venv/bin/python src/display_picture.py -r <image_name>`
+To send to the display use `.venv/bin/python3 src/display_picture.py -r <image_name>`
 
 Tie `-r` option skips any intelligent cropping (as this is no longer needed)
 and just resizes the image to make sure it fits the display.
@@ -122,11 +125,11 @@ To generate portrait images to display on portrait-oriented display switch the
 width and height values for `generate_picture.py` and include the `-p` with the
 display_picture.py script.  I.e. for the Inky Impression:
 
-`venv/bin/python src/generate_picture.py --width=480 --height=800 output_dir`
+`.venv/bin/python3 src/generate_picture.py --width=480 --height=800 output_dir`
 
 and 
 
-`venv/bin/python src/display_picture.py -r -p output_dir/output.png`
+`.venv/bin/python3 src/display_picture.py -r -p output_dir/output.png`
 
 
 For more options, run the `display_picture.py` script with the `-h` or `--help`
@@ -137,14 +140,14 @@ flags to see full usage.
 To automate and generate an image per day created an executable script called `cron_flower` that runs the generation and display code. My version contains the following lines:
 
 ```#!/bin/bash
-cd "/home/dylski"
-./venv/bin/python PaperPiAI/src/generate_picture.py --width 800 --height 480 images
-./venv/bin/python PaperPiAI/src/display_picture.py -r images/output.png
+cd "/home/pi"
+./PiArtAI/.venv/bin/python3 PiArtAI/src/generate_picture.py --width 600 --height 448 images
+./PiArtAI/.venv/bin/python3 PiArtAI/src/display_picture.py -r images/output.png
 ```
 Obviously change yours to point to where your code is.
 
 Then I added the entry in crontab (run `crontab -e` to edit your crontab file):
-`0 0 * * * /home/dylski/bin/cron_flower`
+`0 0 * * * /home/pi/bin/cron_flower`
 to run `cron_flower` every day at midnight.
 
 Note that e-paper displays are
@@ -203,8 +206,8 @@ It allows you to cycle through your processed images, select specific ones, and 
 ## Install GPIO modules
 
 ```bash
-venv/bin/python -m pip install gpiod
-venv/bin/python -m pip install gpiodevice
+.venv/bin/python -m pip install gpiod
+.venv/bin/python -m pip install gpiodevice
 ```
 
 ## Running on Boot (Systemd Service)
@@ -223,15 +226,15 @@ Paste the following content, ensuring the `User` and `ExecStart` path match your
 
 ```ini
 [Unit]
-Description=PaperPiAI Button Monitor (gpiod)
+Description=PiArtAI Button Monitor (gpiod)
 # Wait for basic networking, but not for the desktop environment
 After=network.target
 
 [Service]
-# Replace 'dylski' with your actual username
-User=dylski
+# Replace 'pi' with your actual username
+User=pi
 # Adjust the path to where your virtual environment and script are located
-ExecStart=/home/dylski/venv/bin/python3 /home/dylski/projects/PaperPiAI/src/display_buttons.py
+ExecStart=/home/pi/PiArtAI/.venv/bin/python3 /home/pi/PaperPiAI/src/display_buttons.py
 # If the script exits unexpectedly, restart it after 5 seconds
 Restart=always
 RestartSec=5
@@ -282,10 +285,10 @@ Example for 1600x1200 resolution (Landscape):
 ```Bash
 
 # Generate the image
-venv/bin/python src/generate_picture.py --width=1600 --height=1216 output_dir
+.venv/bin/python src/generate_picture.py --width=1600 --height=1216 output_dir
 
 # Display the image
-venv/bin/python src/display_picture.py -r output_dir/output.png
+.venv/bin/python src/display_picture.py -r output_dir/output.png
 ```
 
 For Portrait orientation, swap the width/height and add the -p flag:
@@ -293,8 +296,8 @@ For Portrait orientation, swap the width/height and add the -p flag:
 ```Bash
 
 # Generate the image
-venv/bin/python src/generate_picture.py --width=1216 --height=1600 output_dir
+.venv/bin/python src/generate_picture.py --width=1216 --height=1600 output_dir
 
 # Display the image (note the -p flag)
-venv/bin/python src/display_picture.py -r -p output_dir/output.png
+.venv/bin/python src/display_picture.py -r -p output_dir/output.png
 ```
