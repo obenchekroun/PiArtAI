@@ -118,9 +118,9 @@ if __name__ == "__main__":
     simulate_display = args["simulate_display"]
 
     # Get resolution from Inky
-    if not simulate_display:
-        inky = auto(ask_user=True, verbose=True)
-        disp_w, disp_h = inky.resolution
+    # if not simulate_display:
+    #     inky = auto(ask_user=True, verbose=True)
+    #     disp_w, disp_h = inky.resolution
 
     # Swap axes for portrait orientation
     if args["portrait"]:
