@@ -36,9 +36,7 @@ Based on PaperPiAI : [dylski's PpaerPiAI](https://github.com/dylski/PaperPiAI). 
 # Install
 
 * **Raspberry Pi Zero 2**
-* **Inky Impression 7.3"** 7-colour e-ink display. For Waveshare displays, see
-  [here](https://github.com/dylski/PaperPiAI/issues/12#issuecomment-2603268581)
-* OR Waveshare 5.65 inch 7 color display 
+* An E-paper display, preferably 7 colors (Inky Impression 7.3" or Waveshare 7-color display )
 * Picture frame, ideally with deep frame to accommodate RPi Zero
 * Heatsink (optional) - I saw a max of 70°C (ambient was ~21°C) but one might
   be useful in a hot area or confined space
