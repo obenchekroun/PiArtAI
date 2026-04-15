@@ -4,15 +4,33 @@
 
 import argparse
 import cv2
-from inky.auto import auto
+#from inky.auto import auto
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+from omni_epd import displayfactory, EPDNotFoundError
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+DISPLAY_TYPE = "waveshare_epd.epd5in65f"
+DISPLAY_RESOLUTION = (600, 448)
+
+FONT_FILE = '/home/pi/PiArtAI/ressources/CormorantGaramond-Regular.ttf'
+FONT_SIZE = 18
+
+font = ImageFont.truetype(FONT_FILE, FONT_SIZE)
+epd = displayfactory.load_display_driver(DISPLAY_TYPE)
+
+# ---------------------------------------------------------------------------
+# functions
+# ---------------------------------------------------------------------------
 
 def load_image(image_path):
     return cv2.imread(image_path)
 
 def save_image(image_path, image):
-    cv2.imwrite(image_path, image)
+    print(f"\nSaving to image filepath : {image_path}")
+    return cv2.imwrite(image_path, image)
 
 def crop(image, disp_w, disp_h, intelligent=True):
     # Intelligently resize and crop image to display proportions.
@@ -76,32 +94,16 @@ def crop(image, disp_w, disp_h, intelligent=True):
     print(f"Cropped WxH: {img_w} x {img_h}")
     return image
 
-def display(inky, image, saturation=1.0):
-    if image.shape[0] > image.shape[1]:
-        image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    inky.set_image(Image.fromarray(image), saturation=saturation)
-    inky.show()
 
-def display_waveshare(image, saturation=1.0):
-    from waveshare_epd import epd5in65f # swap this if you have a different display type
-    epd = epd5in65f.EPD()
-    if image.shape[0] > image.shape[1]:
-        image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    epd.init()
-    epd.display(epd.getbuffer(Image.fromarray(image)))
-    epd.sleep()
-    
+# ---------------------------------------------------------------------------
+# main
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
     ap = argparse.ArgumentParser()
     ap.add_argument("image", 
-        help="input image")
-    ap.add_argument("-o", "--output", default="",
-        help="name to save cropped display image if provided")
+        help="relative file path to input image")
     ap.add_argument("-p", "--portrait", action="store_true",
                     default=False, help="Portrait orientation")
     ap.add_argument("-c", "--centre_crop", action="store_true",
@@ -110,34 +112,37 @@ if __name__ == "__main__":
                     default=False, help="Simply resize image to display ignoring aspect ratio")
     ap.add_argument("-s", "--simulate_display", action="store_true",
                     default=False, help="Do not interact with e-paper display to get resolution")
-    ap.add_argument("--width", default=800, help="The width of the display")
-    ap.add_argument("--height", default=480, help="The height of the display")
+    ap.add_argument("--width", default=0, type=int, help="The width of the display")
+    ap.add_argument("--height", default=0, type=int, help="The height of the display")
     args = vars(ap.parse_args())
 
-    disp_w, disp_h = args["width"], args["height"]
+    
     simulate_display = args["simulate_display"]
-
-    # Get resolution from Inky
-    # if not simulate_display:
-    #     inky = auto(ask_user=True, verbose=True)
-    #     disp_w, disp_h = inky.resolution
-
-    # Swap axes for portrait orientation
+    image_path = args["image"]
+    if args["width"] != 0 and args["height"] != 0:
+        DISPLAY_RESOLUTION = (args["width"], args["height"])
+    # # Swap axes for portrait orientation
     if args["portrait"]:
-        disp_w, disp_h = disp_h, disp_w
+        DISPLAY_RESOLUTION = (DISPLAY_RESOLUTION[1], DISPLAY_RESOLUTION[0])
 
-    image = load_image(args["image"])
+    canvas = Image.new(mode="RGB", size=DISPLAY_RESOLUTION, color="white")
+    image = load_image(image_path)
+    
     if args["resize_only"]:
-        print(f"Resizing to {disp_w}x{disp_h}")
-        image = cv2.resize(image, (disp_w, disp_h))
+        print(f"Resizing to {DISPLAY_RESOLUTION[0]}x{DISPLAY_RESOLUTION[1]}")
+        image = cv2.resize(image, (DISPLAY_RESOLUTION[0], DISPLAY_RESOLUTION[1]))
+        save_image(image_path, image)
     else:
-        image = crop(image, disp_w, disp_h, args["centre_crop"]==False)
+        image = crop(image, DISPLAY_RESOLUTION[0], DISPLAY_RESOLUTION[1], args["centre_crop"]==False)
+        save_image(image_path, image)
 
+    im2 = Image.open(args["image"])
+    canvas.paste(im2, (0,0))
+    im3 = ImageDraw.Draw(canvas)    
+    
     if not simulate_display:
-        #display(inky, image)
-        display_waveshare(image)
-
-    if args["output"]:
-        save_image(args["output"], image)
+        epd.prepare()
+        epd.display(canvas)
+        epd.sleep()
 
 

@@ -87,6 +87,28 @@ that the e-ink display does not impair the wifi signal!
 
 Apologies for the rather manual approach - my install-fu is not up to scratch!
 
+## Installing omni-epd
+PiArtAI relies on omni-epd to get compatibility with a arge number of screens.
+In order to install it (this part is also handled with the script `install.sh`) :
+
+``` Bash
+cd PiArtAI/
+source .venv/bin/activate
+pip3 install --upgrade pip setuptools wheel
+pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd
+```
+
+
+
+In `display_picture.py`, configure the correct display using the variables :
+
+``` python
+DISPLAY_TYPE = "waveshare_epd.epd5in65f" #
+DISPLAY_RESOLUTION = (600, 448)
+```
+
+Note that omni-epd uses `omni-epd.ini` as a config file, see its contents for options.
+
 # Generating and displaying
 
 ## Generating
@@ -96,8 +118,8 @@ target directory to save the images. The Inky Impressions has a resolution of
 800x480 so for a landscape image the command would be:
 
 ``` Bash
-python3 src/generate_picture.py --width=800 --height=480 output_dir # for Pimoroni 7.3 inch screen
-python3 src/generate_picture.py --width=600 --height=448 output_dir # for waveshare 5.65inch screen
+python3 generate_picture.py --width=800 --height=480 output_dir # for Pimoroni 7.3 inch screen
+python3 generate_picture.py --width=600 --height=448 output_dir # for waveshare 5.65inch screen
 ```
 
 This generates a new image with a unique name based on the prompt, and a copy

@@ -18,7 +18,7 @@ READ_TIMEOUT = 1
 
 DISPLAY_CMD = [
     "/home/pi/PiArtAI/.venv/bin/python3",
-    "/home/pi/PiArtAI/src/display_picture.py",
+    "/home/pi/PiArtAI/display_picture.py",
     "-r",
     DISPLAY_IMAGE
 ]

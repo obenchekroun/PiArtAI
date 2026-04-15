@@ -21,7 +21,10 @@ python3 -m pip install opencv_contrib_python
 python3 -m pip install inky[rpi]==1.5.0
 python3 -m pip install pillow
 python3 -m pip install spidev # for waveshare display
-  
+
+pip3 install --upgrade pip setuptools wheel
+pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd
+
 # Following instructions taken directly from [OnnxStream repo](https://github.com/vitoplantamura/OnnxStream).
 
 cd "$INSTALL_DIR"
