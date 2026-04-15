@@ -12,7 +12,7 @@ Once set up the picture frame is fully self-sufficient, able to generate unique
 images with no internet access until the end of time (or a hardware failure -
 which ever comes first).
 
-Each image takes about 30 minutes to generate and about 30 seconds to refresh
+Each image takes about 1h10 minutes to generate and about 30 seconds to refresh
 to the screen.  You can change the list of image subjects and styles in the
 prompt file or provide your own. Ideally I'd like to generate the image
 prompts with a local LLM but have not found one that runs on the RPi Zero 2
@@ -136,7 +136,7 @@ flags to see full usage.
 
 ## Displaying
 
-To send to the display use `.venv/bin/python3 src/display_picture.py -r <image_name>`
+To send to the display use `.venv/bin/python3 display_picture.py -r <image_name>`
 
 Tie `-r` option skips any intelligent cropping (as this is no longer needed)
 and just resizes the image to make sure it fits the display.
@@ -147,11 +147,11 @@ To generate portrait images to display on portrait-oriented display switch the
 width and height values for `generate_picture.py` and include the `-p` with the
 display_picture.py script.  I.e. for the Inky Impression:
 
-`.venv/bin/python3 src/generate_picture.py --width=480 --height=800 output_dir`
+`.venv/bin/python3 generate_picture.py --width=480 --height=800 output_dir`
 
 and 
 
-`.venv/bin/python3 src/display_picture.py -r -p output_dir/output.png`
+`.venv/bin/python3 display_picture.py -r -p output_dir/output.png`
 
 
 For more options, run the `display_picture.py` script with the `-h` or `--help`
@@ -159,24 +159,29 @@ flags to see full usage.
 
 ## Automating
 
-To automate and generate an image per day created an executable script called `cron_flower` that runs the generation and display code. My version contains the following lines:
+To automate and generate an image per day for example, you can customise the executable script called `run_flower.sh` that runs the generation and display the image. 
 
 ```#!/bin/bash
-cd "/home/pi"
-./PiArtAI/.venv/bin/python3 PiArtAI/src/generate_picture.py --width 600 --height 448 images
-./PiArtAI/.venv/bin/python3 PiArtAI/src/display_picture.py -r images/output.png
-```
-Obviously change yours to point to where your code is.
+#! /usr/bin/bash
 
-Then I added the entry in crontab (run `crontab -e` to edit your crontab file):
-`0 0 * * * /home/pi/bin/cron_flower`
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd ${SCRIPT_DIR}
+source .venv/bin/activate
+python3 generate_picture.py --width 600 --height 448 images/
+python3 display_picture.py -r images/output.png
+```
+Obviously change yours to point to where your code is, and adapt `--width --height` argument to display size.
+Make it executable :
+
+``` Bash
+chmod +x run_flower.sh
+```
+
+Then add the entry in crontab (run `crontab -e` to edit your crontab file):
+`0 0 * * * /home/pi/PiArtAI/cron_flower.sh`
 to run `cron_flower` every day at midnight.
 
-Note that e-paper displays are
-suspectible to temperature. Depending on your Pi Zero's environment, it 
-may get hot for an extended period of
-time which could cause the display to render with some discoloration. This can be
-avoided by delaying the display update after generating the image.
+Note that e-paper displays are suspectible to temperature. Depending on your Pi Zero's environment, it  may get hot for an extended period of time which could cause the display to render with some discoloration. This can be avoided by delaying the display update after generating the image.
 
 ## Prompts
 The `prompts` directory stores JSON files which can be used to provide promps.
@@ -256,7 +261,7 @@ After=network.target
 # Replace 'pi' with your actual username
 User=pi
 # Adjust the path to where your virtual environment and script are located
-ExecStart=/home/pi/PiArtAI/.venv/bin/python3 /home/pi/PaperPiAI/src/display_buttons.py
+ExecStart=/home/pi/PiArtAI/.venv/bin/python3 /home/pi/PaperPiAI/display_buttons.py
 # If the script exits unexpectedly, restart it after 5 seconds
 Restart=always
 RestartSec=5
@@ -285,41 +290,3 @@ sudo systemctl status display-button-monitor.service
 ```
 
 The script will now run silently in the background, waiting for button presses.
-
-# Inky 13.3" Update
-
-To use PaperPiAI on an Inky 13.3" screen stick with the bullseye OS version - I tried removing zram, minimising GPU RAM and system services but it would still sometimes reboot mid run.
-
-If you are using a Pimoroni Inky display (or run into driver issues), ensure the inky package is the latest version, as older versions may have compatibility issues with newer OS kernels or Python versions.
-
-Upgrade command:
-
-```Bash
-
-# Assuming you are in your virtual environment
-python -m pip install inky[rpi] --upgrade
-```
-B. Display Resolution in Configuration
-The default scripts often target smaller displays. You must specify the correct resolution 1600x1200 for your 13.3" display when running the generation script. Values must be multiples of 32 so 1600x1216 is good.
-
-Example for 1600x1200 resolution (Landscape):
-
-```Bash
-
-# Generate the image
-.venv/bin/python src/generate_picture.py --width=1600 --height=1216 output_dir
-
-# Display the image
-.venv/bin/python src/display_picture.py -r output_dir/output.png
-```
-
-For Portrait orientation, swap the width/height and add the -p flag:
-
-```Bash
-
-# Generate the image
-.venv/bin/python src/generate_picture.py --width=1216 --height=1600 output_dir
-
-# Display the image (note the -p flag)
-.venv/bin/python src/display_picture.py -r -p output_dir/output.png
-```

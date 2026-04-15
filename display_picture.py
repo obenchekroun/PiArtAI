@@ -29,7 +29,6 @@ def load_image(image_path):
     return cv2.imread(image_path)
 
 def save_image(image_path, image):
-    print(f"\nSaving to image filepath : {image_path}")
     return cv2.imwrite(image_path, image)
 
 def crop(image, disp_w, disp_h, intelligent=True):
