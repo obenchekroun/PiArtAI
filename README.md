@@ -107,6 +107,137 @@ DISPLAY_RESOLUTION = (600, 448)
 
 Note that omni-epd uses `omni-epd.ini` as a config file, see its contents for options.
 
+## Connect EPD to Pi
+* CAREFULLY plug EPD into Raspberry Pi, following instructions from the vendor. PiArtAI implements omni-epd and should work with any EPD listed on this page: https://github.com/robweber/omni-epd/blob/main/README.md .
+
+In the case of the Waveshare e-paper 5.65inch 7colors display used in this case, the connection is as follows :
+![Pin connection to Raspberry Pi](/img/pin_waveshare_epd.epd5in65f.png?raw=true)
+* Connect power directly to Raspberry Pi once done.
+
+## DS3231 as alarm : 
+1. Enable I2C : `sudo raspi-config` and enable i2c in Interface Options > I5 I2C then reboot `sudo reboot`
+2. Install required libraries and tools : `sudo apt install python3-smbus i2c-tools`
+3. Connect the DS3231, following this pining :
+
+| DS3231  | RPi connection | RPi pin | 
+| --- | --- | --- |
+| VCC  | 3V3 | Pin 1 |
+| GND  | GND | Pin 6 e.g  |
+| SDA  | GPIO 4 | Pin 7  |
+| SCL  | GPIO 27 | Pin 13  |
+| INT/SQW  | Reset Pin | pin 5 (RPi zero 2W) or pin 3 (RPi 4)  |
+
+| ![RPi Zero 2W Pin out diagram](/img/Zero2W3.jpg.webp) |
+|:--:| 
+| *RPi Zero 2W Pin out diagram* |
+
+4. Edit /boot/config.txt by adding dtoverlay config and reboot : 
+ * `sudo nano /boot/config.txt`
+ * Add the following : 
+ ```
+ #dtoverlay for RTC DS3231 on specific pin
+ dtoverlay=i2c-rtc-gpio,ds3231,i2c_gpio_sda=4,i2c_gpio_scl=27,wakeup-source
+ ```
+Make sure that the GPIO pin in the dtoverlay code corresponds to the pinning of the DS3231 to the RPi.
+ * Then reboot `sudo reboot`
+
+5. To detect and list i2c hardware :
+``` sh
+ sudo i2cdetect -l # list devices
+ sudo i2cdetect -y 11 # (replace 11 with bus, usually 11 for this dtoverlay with i2c-rtc-gpio )
+```
+Output :
+
+``` sh
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:                         -- -- -- -- -- -- -- -- 
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+50: -- -- -- -- -- -- -- 57 -- -- -- -- -- -- -- -- 
+60: -- -- -- -- -- -- -- -- 68 -- -- -- -- -- -- -- 
+70: -- -- -- -- -- -- -- --   
+```
+68 is code of RTC clock
+if UU appear, mean driver loaded. Otherwise, verify /boot/config.txt and reboot.
+
+6. Now that we have successfully got the kernel driver activated for the RTC Chip and we know it’s communicating with the Raspberry Pi, we need to remove the “fake-hwclock“ package. This package acts as a placeholder for the real hardware clock when you don’t have one.
+
+``` sh
+sudo apt-get -y remove fake-hwclock
+sudo update-rc.d -f fake-hwclock remove
+sudo systemctl disable fake-hwclock
+```
+
+7. Now that we have disabled the “fake-hwclock” package we can proceed with getting the original hardware clock script that is included in Raspbian up and running again by commenting out a section of code.
+Run the following command to begin editing the original RTC script.
+
+``` sh
+sudo nano /lib/udev/hwclock-set
+```
+and comment out : 
+
+``` sh
+#if [ -e /run/systemd/system ] ; then
+# exit 0
+#fi
+
+```
+
+8. Now, if we have to sync time of the RTC to the one of the RPi (obtained with internet connection) :
+
+``` sh
+sudo hwclock -r #get time from RTC clock
+date #see if time is correct of RPi
+sudo hwclock -w # write time to RTC
+```
+
+### Usage of DS3231 alarm
+In order to boot, a short-to-ground of the _Pin 3_ (RPi 4) or _Pin 5_ (RPi Zero 2W) will reboot the chip.
+
+Setting an alarm can be done like that
+``` sh
+# as root
+echo 0 > /sys/class/rtc/rtc0/wakealarm #reset
+echo "$(date -d 'now + 1 minutes' +%s)" > /sys/class/rtc/rtc0/wakealarm
+echo `date +%s -d'10:00:00'` > /sys/class/rtc/rtc0/wakealarm
+```
+
+``` sh
+# as user
+echo "0" | sudo tee /sys/class/rtc/rtc0/wakealarm 
+date '+%s' -d '+ 30 minutes' | sudo tee /sys/class/rtc/rtc0/wakealarm
+```
+
+We can check if the alarm is set as follows : 
+
+``` sh
+cat /proc/driver/rtc
+```
+
+with the following output : 
+
+``` sh
+rtc_time        : 11:42:35
+rtc_date        : 2020-05-23
+alrm_time       : 11:47:33 # <-- alarm time (UTC timezone)
+alrm_date       : 2020-05-23
+alarm_IRQ       : yes # <-- alarm set
+alrm_pending    : no
+update IRQ enabled      : no
+periodic IRQ enabled    : no
+periodic IRQ frequency  : 1
+max user IRQ frequency  : 64
+24hr            : yes
+```
+
+After the reboot the alarm is removed automatically. Note that the time-horizon of the DS3231 is about a month. Also note that not every cheap DS3231 breakout will provide the INT/SQW pin.
+
+The magic is that GP03 will always start the system when pulled to GND. And the DS3231 will pull the INT to GND when the alarm fires. I have found no way to change the pin to something else, but there is a "run"-pin which is not populated which should also work (but I did not test that). GP03 is hardware I2C, if you need that, you could activate some alternate function for some other i2cX bus.
+
+You don't even need a backup battery for this, because after shutting down your Pi it will still provide power on the 3V3 and 5V rails. So this is not a solution for battery based systems. If you really need to bring current consumption down to zero, you need a different solution, for example you can connect the INT of the rtc to a MCU which uses a mosfet to turn power on.
+
 # Generating and displaying
 
 ## Generating
@@ -180,6 +311,29 @@ Then add the entry in crontab (run `crontab -e` to edit your crontab file):
 to run `run_flower` every 12 hours, between 5 and 19h.
 
 Note that e-paper displays are suspectible to temperature. Depending on your Pi Zero's environment, it  may get hot for an extended period of time which could cause the display to render with some discoloration. This can be avoided by delaying the display update after generating the image.
+
+
+## Configure PiArtAI to boot with DS3231 RTC
+There are two options, either wake at regular interval, even at night, or do not wake during night.
+
+Uncomment the option lines from `run_flower.sh` :
+
+- Update at regular interval, regardless of time of the day :
+``` bash
+echo "Going to sleep in 60 seconds, until next time ..."
+echo 0 > /sys/class/rtc/rtc0/wakealarm #reset
+# echo "$(date -d 'now + 3 hours' +%s)" > /sys/class/rtc/rtc0/wakealarm # With an interval
+echo `date +%s -d 'tomorrow 06:00:00'` > /sys/class/rtc/rtc0/wakealarm # OR at fixed time
+shutdown -h +1 "PiArtAI going to sleep in 60 seconds. Send sudo shutdown -c to cancel"
+```
+
+You can adjust the frequency of waking up in the `echo "$(date -d 'now + 3 hours' +%s)" > /sys/class/rtc/rtc0/wakealarm` code.
+
+Then set a `crontab -e` on reboot :
+
+``` bash
+@reboot /home/pi/PiArtAI/run_flower.sh
+```
 
 ## Prompts
 The `prompts` directory stores JSON files which can be used to provide promps.
