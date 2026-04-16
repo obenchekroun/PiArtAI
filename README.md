@@ -176,8 +176,8 @@ chmod +x run_flower.sh
 ```
 
 Then add the entry in crontab (run `crontab -e` to edit your crontab file):
-`0 5-19/4 * * *`
-to run `run_flower` every 4 hours, between 5 and 19h.
+`0 5-19/12 * * * /home/pi/PiArtAI/run_flower.sh`
+to run `run_flower` every 12 hours, between 5 and 19h.
 
 Note that e-paper displays are suspectible to temperature. Depending on your Pi Zero's environment, it  may get hot for an extended period of time which could cause the display to render with some discoloration. This can be avoided by delaying the display update after generating the image.
 
