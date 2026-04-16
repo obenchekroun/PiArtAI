@@ -14,13 +14,13 @@ sudo apt-get -y install git git-lfs
 sudo apt-get -y install libopencv-dev  python3-opencv
 
 cd "$INSTALL_DIR"
-python3 -m venv .venv
+python3 -m venv --system-site-packages .venv
 . .venv/bin/activate
 
 python3 -m pip install opencv_contrib_python
-#python3 -m pip install inky[rpi]==1.5.0
+python3 -m pip install inky[rpi]==1.5.0
 python3 -m pip install pillow
-#python3 -m pip install spidev # for waveshare display
+python3 -m pip install spidev # for waveshare display
 
 pip3 install --upgrade pip setuptools wheel
 pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd
