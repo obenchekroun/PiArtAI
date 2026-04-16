@@ -320,11 +320,11 @@ Uncomment the option lines from `run_flower.sh` :
 
 - Update at regular interval, regardless of time of the day :
 ``` bash
-echo "Going to sleep in 60 seconds, until next time ..."
-echo 0 > /sys/class/rtc/rtc0/wakealarm #reset
-# echo "$(date -d 'now + 3 hours' +%s)" > /sys/class/rtc/rtc0/wakealarm # With an interval
-echo `date +%s -d 'tomorrow 06:00:00'` > /sys/class/rtc/rtc0/wakealarm # OR at fixed time
-shutdown -h +1 "PiArtAI going to sleep in 60 seconds. Send sudo shutdown -c to cancel"
+# echo "Going to sleep in 60 seconds, until next time ..."
+# echo "0" | sudo tee /sys/class/rtc/rtc0/wakealarm  #reset
+# date '+%s' -d '+ 3 hours' | sudo tee /sys/class/rtc/rtc0/wakealarm # With an interval
+# date '+%s' -d 'tomorrow 06:00:00' | sudo tee /sys/class/rtc/rtc0/wakealarm OR at fixed time
+# sudo shutdown -h +1 "PiArtAI going to sleep in 60 seconds. Send sudo shutdown -c to cancel"
 ```
 
 You can adjust the frequency of waking up in the `echo "$(date -d 'now + 3 hours' +%s)" > /sys/class/rtc/rtc0/wakealarm` code.
