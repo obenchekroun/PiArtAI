@@ -40,7 +40,7 @@ Based on PaperPiAI : [dylski's PpaerPiAI](https://github.com/dylski/PaperPiAI). 
 * Picture frame, ideally with deep frame to accommodate RPi Zero
 * Heatsink (optional) - I saw a max of 70°C (ambient was ~21°C) but one might
   be useful in a hot area or confined space
-* **Raspbian Bullseye Lite 64bit**. I have failed to get it working on Trixie due to the system taking too much memory ([see here](https://github.com/dylski/PaperPiAI/issues/22#issuecomment-3718491877) for some guidelines) and Bookworm (which had odd slowdowns).
+* **Raspbian Bullseye Lite 64bit**. I have failed to get it working on Trixie due to the system taking too much memory ([see here](https://github.com/dylski/PaperPiAI/issues/22#issuecomment-3718491877) for some guidelines) and Bookworm (which had odd slowdowns). It can be downloaded [here](https://downloads.raspberrypi.com/raspios_oldstable_lite_arm64/images/raspios_oldstable_lite_arm64-2024-10-28/)
 
 ##  Increase swapfile size for compilation
 
