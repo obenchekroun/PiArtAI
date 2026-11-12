@@ -76,6 +76,8 @@ deb http://archive.debian.org/debian bullseye main contrib non-free
 deb http://archive.debian.org/debian-security bullseye-security main contrib non-free
 ```
 
+Then run `sudo apt update`.
+
 Firstly download this repository somewhere with:
 
 ```
