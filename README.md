@@ -40,7 +40,7 @@ Based on PaperPiAI : [dylski's PpaerPiAI](https://github.com/dylski/PaperPiAI). 
 * Picture frame, ideally with deep frame to accommodate RPi Zero
 * Heatsink (optional) - I saw a max of 70°C (ambient was ~21°C) but one might
   be useful in a hot area or confined space
-* **Raspbian Bullseye Lite**. I have failed to get it working on Trixie due to the system taking too much memory ([see here](https://github.com/dylski/PaperPiAI/issues/22#issuecomment-3718491877) for some guidelines) and Bookworm (which had odd slowdowns).
+* **Raspbian Bullseye Lite 64bit**. I have failed to get it working on Trixie due to the system taking too much memory ([see here](https://github.com/dylski/PaperPiAI/issues/22#issuecomment-3718491877) for some guidelines) and Bookworm (which had odd slowdowns).
 
 ##  Increase swapfile size for compilation
 
@@ -56,6 +56,25 @@ Then restart swap with `sudo /etc/init.d/dphys-swapfile restart`
 run `sudo raspi-config` and enable **SPI interface** and **I2C interface**
 
 ## Install required components
+
+As Bullseye has reached end of life, `/etc/apt/sources.list` needs to be edited to point towards the archive.
+
+``` bash
+sudo nano /etc/apt/sources.list
+```
+
+Then add the following lines and comment the one commented :
+
+``` bash
+# To be commented out
+#deb http://deb.debian.org/debian bullseye main contrib non-free
+#deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+#deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+
+# To be added
+deb http://archive.debian.org/debian bullseye main contrib non-free
+deb http://archive.debian.org/debian-security bullseye-security main contrib non-free
+```
 
 Firstly download this repository somewhere with:
 
